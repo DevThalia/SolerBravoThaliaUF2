@@ -6,21 +6,26 @@ import { fetchTipoCentro } from '@/composables/fech';
 const route = useRoute();
 const router = useRouter();
 
-const datos = ref([]);
+const tiposCentro = ref([]);
 const cargando = ref(true);
 const error = ref(null);
 
+const año = route.params.any;
+
 onMounted(async () => {
-    try {
-        console.log(route.params);  
-        const año = route.params.any;  
-        datos.value = await fetchTipoCentro(año); 
-    } catch (err) {
-        error.value = "Error al obtener los datos del any";
-    } finally {
+    if (año) {
+        try {
+            tiposCentro.value = await fetchTipoCentro(año);
+        } catch (err) {
+            error.value = `Error al obtener los datos del año: ${err.message}`;
+        } finally {
+            cargando.value = false;
+        }
+    } else {
+        error.value = 'Año no especificado';
         cargando.value = false;
     }
-});    
+});
 
 const volver = () => {
     router.push('/lista');
@@ -30,12 +35,17 @@ const volver = () => {
 <template>
     <div>
         <h1>Informe de l'any {{ route.params.any }}</h1>
-        <h5>Centres:</h5>
-        <ul>
-            <li v-for="(any, index) in datos" :key="index">
-                {{ any.tipo_centro }}
-            </li>
-        </ul>
+        <div v-if="cargando">Cargando...</div>
+        <div v-if="error">{{ error }}</div>
+        <div v-if="!cargando && !error">
+            <h5>Centres:</h5>
+            <ul>
+                <li v-for="(tipo, index) in tiposCentro" :key="index">
+                    {{ tipo.tipo_centro }}
+                </li>
+            </ul>
+        </div>
         <button @click="volver">Volver</button>
     </div>
 </template>
+
