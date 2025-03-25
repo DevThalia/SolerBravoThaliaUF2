@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { fetchDatos } from '@/composables/fetch';
+import { fetchDatos } from '@/composables/fech';
 
 const route = useRoute();
 const router = useRouter();

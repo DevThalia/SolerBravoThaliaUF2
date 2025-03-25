@@ -1,20 +1,22 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { fetchTipoCentro } from '@/composables/fetch';
+import { fetchTipoCentro } from '@/composables/fech';
 
 const route = useRoute();
 const router = useRouter();
 
-const años = ref([]);
-const cargando = ref(false);
+const datos = ref([]);
+const cargando = ref(true);
 const error = ref(null);
 
 onMounted(async () => {
-    try{
-        años.value = await fetchTipoCentro(route.params.año); //probar con any
-    } catch (error) {
-        error.value = "Error al obtener los datos del año";
+    try {
+        console.log(route.params);  
+        const año = route.params.any;  
+        datos.value = await fetchTipoCentro(año); 
+    } catch (err) {
+        error.value = "Error al obtener los datos del any";
     } finally {
         cargando.value = false;
     }
@@ -23,16 +25,15 @@ onMounted(async () => {
 const volver = () => {
     router.push('/lista');
 };
-
 </script>
 
 <template>
     <div>
-        <h1>Informe de l'any {{ route.params.año }}</h1>
+        <h1>Informe de l'any {{ route.params.any }}</h1>
         <h5>Centres:</h5>
         <ul>
-            <li v-for="año in años" :key="año.any">
-                {{ año.tipo }}
+            <li v-for="(any, index) in datos" :key="index">
+                {{ any.tipo_centro }}
             </li>
         </ul>
         <button @click="volver">Volver</button>

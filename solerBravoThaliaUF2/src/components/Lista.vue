@@ -1,7 +1,9 @@
 <script setup>
 import { fetchAños } from '@/composables/fech';
 import { RouterLink } from 'vue-router';
-return { años, cargando, error }= fetchAños();
+import { ref } from 'vue';
+
+const { años, cargando, error } = fetchAños();
 </script>
 
 <template>
@@ -10,7 +12,7 @@ return { años, cargando, error }= fetchAños();
         <ul>
             <li v-for="año in años" :key="año.any">
                 <RouterLink :to="'/any/' + año.any">
-                    {{ año.any }}
+                    {{ año.año }}
                 </RouterLink>
             </li>
         </ul>

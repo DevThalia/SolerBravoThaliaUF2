@@ -20,6 +20,7 @@ const API_URL = 'https://analisi.transparenciacatalunya.cat/resource/rsgi-8ymj.j
 },
 */
 
+
 export async function fetchAños() {
     try {
         const respuesta = await axios.get(API_URL);
