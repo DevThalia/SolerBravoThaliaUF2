@@ -1,20 +1,33 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { fetchDatos } from '@/composables/fech';
+import { fetchAños, fetchTipoCentro, fetchDatos } from '@/composables/fetch';
 
 const route = useRoute();
 const router = useRouter();
 
 const años = ref([]);
-const cargando = ref(false);
+const tipoCentro = ref([]);
+const datosCentro = ref([]);
+const cargando = ref(true);
 const error = ref(null);
+
 onMounted(async () => {
     try {
-        años.value = await fetchDatos('/centro/' + route.params.tipus_de_centres + '/' + route.params.any);
+        const año = route.params.any;
+        const tipo = route.params.tipus_de_centres;
+
+     
+        años.value = await fetchAños();
+
+
+        tipoCentro.value = await fetchTipoCentro(año);
+
+
+        datosCentro.value = await fetchDatos(año, tipo);
 
     } catch (err) {
-        error.value = "Error al obtener los datos del tipo de centro";
+        error.value = `Error al obtener los datos: ${err.message}`;
     } finally {
         cargando.value = false;
     }
@@ -23,9 +36,7 @@ onMounted(async () => {
 const volver = () => {
     router.push('/lista');
 };
-
 </script>
-
 
 <template>
     <div>
@@ -47,7 +58,7 @@ const volver = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="dato in años">
+                        <tr v-for="dato in datosCentro" :key="dato.mobilitat_homes">
                             <td>{{ dato.mobilitat_homes }}</td>
                             <td>{{ dato.mobilitat_dones }}</td>
                             <td>{{ dato.formaci_homes }}</td>
