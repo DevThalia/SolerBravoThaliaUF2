@@ -1,4 +1,5 @@
 import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 const API_URL = 'https://analisi.transparenciacatalunya.cat/resource/rsgi-8ymj.json';
 
@@ -19,92 +20,58 @@ const API_URL = 'https://analisi.transparenciacatalunya.cat/resource/rsgi-8ymj.j
 },
 */
 
-/* Opció menú Beques: Accedeix a la pàgina que llista d’anys (Tenim dades des de 2004)*/
-
-export function fetchAños() {
-    const años = ref([]);
-    const cargando = ref(true);
-    const error = ref(null);
-
-    onMounted(async () => {
-        try {
-            const respuesta = await fetch(API_URL);
-            const datos = await respuesta.json();
-
-            años.value = datos.map(año => ({
-                año: año.any
-            }));
-        } catch (error) {
-            error.value = 'Error al obtener los datos de los embalses';
-        } finally {
-            cargando.value = false;
-        }
-    });
-
-    return { años, cargando, error };
+export async function fetchAños() {
+    try {
+        const respuesta = await axios.get(API_URL);
+        const datos = respuesta.data;
+        const unico = new Set();
+        return datos.filter(año => {
+            if (!unico.has(año.any)) {
+                unico.add(año.any);
+                return true;
+            }
+        }).map(año => ({
+            año: año.any,
+        }));
+    } catch (err) {
+        throw new Error('Error al obtener los datos de los años');
+    }
 }
 
-/* Obtener tipus_de_centres, mediante el año que se pasa
-    parámetro: año
-    devuelve un array con los tipos de centros
-    lanza error si la peticion falla
-*/
-
-export default function fetchTipoCentro(año) {
+export async function fetchTipoCentro(año) {
     try {
-        const tipoCentro = ref([]);
-        const cargando = ref(true);
-        const error = ref(null);
-        onMounted(async () => {
-            try {
-                const respuesta = await fetch(`${API_URL}?any=${año}`);
-                const datos = await respuesta.json();
-
-                tipoCentro.value = datos.map(tipo => ({
-                    tipo: tipo.tipus_de_centres
-                }));
-            } catch (error) {
-                error.value = 'Error al obtener los datos de los embalses';
-            } finally {
-                cargando.value = false;
+        const respuesta = await axios.get(API_URL + '?any=' + año);
+        const datos = respuesta.data;
+        const unico = new Set();
+        return datos.filter(tipo => {
+            if (!unico.has(tipo.tipus_de_centres)) {
+                unico.add(tipo.tipus_de_centres);
+                return true;
             }
-        });
-        return { tipoCentro, cargando, error };
-    } catch (error) {
+        }).map(tipo => ({
+            tipo_centro: tipo.tipus_de_centres
+        }));
+    } catch (err) {
+        throw new Error('Error al obtener los datos del año');
+    }
+}
+
+
+export async function fetchDatos(año, tipo_centro) {
+    try {
+        const respuesta = await axios.get(API_URL + '?any=' + año + '&tipus_de_centres=' + tipo_centro);
+        const datos = respuesta.data;
+        return datos.map(dato => ({
+            mobilitat_homes: dato.mobilitat_homes,
+            mobilitat_dones: dato.mobilitat_dones,
+            formaci_homes: dato.formaci_homes,
+            formaci_dones: dato.formaci_dones
+        }));
+    } catch (err) {
         throw new Error('Error al obtener los datos de los centros');
     }
 }
 
-/* Obtener mobilitat_homes, mobilitat_dones, formaci_homes, formaci_homes
-    parametro: año
-    parametro: tipo_centro
-    devuelve un array con los datos de mobilitat_homes, mobilitat_dones, formaci_homes, formaci_homes
-*/
 
-export default function fetchDatos(año, tipo_centro) {
-    try {
-        const datos = ref([]);
-        const cargando = ref(true);
-        const error = ref(null);
-        onMounted(async () => {
-            try {
-                const respuesta = await fetch(`${API_URL}?any=${año}&tipus_de_centres=${tipo_centro}`);
-                const datos = await respuesta.json();
 
-                datos.value = datos.map(dato => ({
-                    mobilitat_homes: dato.mobilitat_homes,
-                    mobilitat_dones: dato.mobilitat_dones,
-                    formaci_homes: dato.formaci_homes,
-                    formaci_dones: dato.formaci_dones
-                }));
-            } catch (error) {
-                error.value = 'Error al obtener los datos de los embalses';
-            } finally {
-                cargando.value = false;
-            }
-        });
-        return { datos, cargando, error };
-    } catch (error) {
-        throw new Error('Error al obtener los datos de los centros');
-    }
-}
+
